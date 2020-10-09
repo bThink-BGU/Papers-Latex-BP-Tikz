@@ -1,0 +1,139 @@
+\NeedsTeXFormat{LaTeX2e}[1999/12/01]
+\ProvidesPackage{pgf-bp}[2020/10/07 v0.1 Some LaTeX macros for drawing BP-related pictures.]
+
+\RequirePackage{tikz}
+\usetikzlibrary{arrows,positioning,shapes,patterns.meta, calc,intersections}
+
+\pgfdeclarepattern{name=rotated grid,
+%   type=uncolored,
+  parameters={\hatchsize, \hatchangle, \hatchlinewidth},
+  bottom left={\pgfpoint{-.1pt}{-.1pt}},
+  top right={\pgfpoint{\hatchsize+.1pt}{\hatchsize+.1pt}},
+  tile size={\pgfpoint{\hatchsize}{\hatchsize}},
+  tile transformation={\pgftransformrotate{\hatchangle}},
+  code={
+    \pgfsetlinewidth{\hatchlinewidth}
+    \draw(-.1pt,0.5*\hatchsize) -- (\hatchsize+.1pt,0.5*\hatchsize);
+    \draw(0.5*\hatchsize,-.1pt) -- (0.5*\hatchsize,\hatchsize+.1pt);
+  }
+}
+\tikzset{
+    hatch size/.store in=\hatchsize,
+    hatch angle/.store in=\hatchangle,
+    hatch line width/.store in=\hatchlinewidth,
+    hatch size=5pt,
+    hatch angle=0pt,
+    hatch line width=.05pt,
+}
+
+\colorlet{mygray}{black!68}
+
+\tikzset{
+  pics/.cd,
+  funnel/.style={
+    code={
+      \foreach \sgn in {-,+}
+        \draw plot[domain=0:10] ({\sgn 1/20*(3+\x*\x)},\x);
+      \foreach \h in {0,10}
+        \draw (0,\h) ellipse[x radius=1/20*(3+\h*\h),y radius=(\h+.5)/20];
+    }
+  },
+  strainer/.style={
+    code={
+        \begin{scope}[every node/.append style={yslant=0.03},yslant=0.03]
+            \draw[pattern=rotated grid, hatch angle=10, hatch size=3pt, hatch line width=0.3pt] (0,0) ellipse (10cm and 4cm);
+            \foreach \h in {1,2,3,4,5,6,7,8,9,10}
+                \draw (0,0+\h/10) ellipse (10cm and 4cm);
+        \end{scope}
+    }
+  },
+  db/.default={0.2cm}{0.5cm}{0.35},
+  db/.style n args={3}{%
+      code={
+        \def\dbsegmentheight{#1}
+        \def\dbradius{#2}
+        \def\dbaspectratio{#3}
+        \draw (0, 1.5*\dbsegmentheight) circle [x radius=\dbradius,y radius=\dbaspectratio*\dbradius];
+        \draw (-\dbradius, 0.5*\dbsegmentheight) arc [start angle=180,end angle=360,x radius=\dbradius, y radius=\dbaspectratio*\dbradius];
+        \draw (-\dbradius,-0.5*\dbsegmentheight) arc [start angle=180,end angle=360,x radius=\dbradius, y radius=\dbaspectratio*\dbradius];
+        \draw (-\dbradius,1.5*\dbsegmentheight) -- ++(0,-3*\dbsegmentheight) arc [start angle=180,end angle=360,x radius=\dbradius, y radius=\dbaspectratio*\dbradius] -- ++(0,3*\dbsegmentheight);
+      },
+  }
+}
+
+\tikzset{
+  pics/.cd,
+  bpcycle/.default={B-Threads},
+  bpcycle/.style={
+    code={
+      \def\shiftinside{0.2,0.3}
+      \coordinate (bt3c) at (0,1.7);
+      \node[draw, fill=white, text width=2.5cm, rounded corners] (bt1) at ($(bt3c) +2*(\shiftinside)$) {\phantom{#1}};
+      \node[draw, fill=white, text width=2.5cm, rounded corners] (bt2) at ($(bt3c) +(\shiftinside)$) {\phantom{#1}};
+      \node[draw, fill=white, text width=2.5cm, align=center, rounded corners] (bt3) at (bt3c) {#1};
+      \pic [scale=0.08, local bounding box=strainer] (strainer) at (0,0) {strainer};
+      \pic [scale=0.1, local bounding box=funnel] (funnel) at (0,-2) {funnel};
+      
+    %   requested arrows
+      \draw [->, line width=0.7pt, blue!90] ([xshift=0.15cm]bt3.-90) -- ([shift=({0.15cm,-0.1cm})]strainer.center);
+      \draw [->, line width=0.7pt, blue!90] ([xshift=-0.15cm]bt3.-90) -- ([shift=({-0.15cm,-0.1cm})]strainer.center);
+      \draw [->, line width=0.7pt, blue!90] ([xshift=0.45cm]bt3.-90) -- ([shift=({0.45cm,-0.02cm})]strainer.center);
+      \draw [->, line width=0.7pt, blue!90] ([xshift=-0.45cm]bt3.-90) -- ([shift=({-0.45cm,-0.02cm})]strainer.center) node[midway,left,align=center, shift=({0,0.2})] {Requested\\Events};
+    %   requested not blocked
+      \draw [->, line width=0.7pt, blue!90] ([shift=({0.15cm,0})]strainer.-90) -- ([shift=({0.15cm,-0.07cm})]funnel.north);
+      \draw [->, line width=0.7pt, blue!90] ([shift=({-0.15cm,0})]strainer.-90) -- ([shift=({-0.15cm,-0.07cm})]funnel.north);
+      
+      % selected event
+      \draw [->, line width=0.7pt, blue!90] (funnel.south) |- ++(-0.5,-0.5)node[right,align=center,midway,yshift=12]{Selected\\Event};
+    
+        %   waits for arrows
+        \draw [->, line width=0.7pt, teal] ([shift=({-0.6,-0.5})]funnel.south) -- ++(-1.9,0) -- ([shift=({-2.5,0})]bt3.center) -- (bt3.west);
+        \draw [->, line width=0.7pt, teal] ([shift=({-2.5,0})]bt3.center) |- ([yshift=0.1cm]bt1.west) node [midway,above,align=center,xshift=25] {Waited-for\\Events};
+        
+        % blocked events
+        \draw [->, line width=0.7pt, purple] (bt3.east) -- ([xshift=0.7cm]bt3.east) |- ([yshift=3]strainer.east);
+        \draw [->, line width=0.7pt, purple] (bt2.east) -- ([xshift=0.7cm]bt2.east)node[right,align=center,yshift=-30] {Blocked\\Events} |-  ([yshift=-3]strainer.east) ;
+    }  
+  }
+}
+
+\tikzset{
+  pics/.cd,
+  cobpcycle/.style={
+    code={
+      \def\shiftinside{0.3,0.3}
+      \node[draw, dashed, fill=white, text width=2.5cm, rounded corners] (lc1) at ($(bt1) +2*(\shiftinside)$) {\phantom{Live Copies}};
+      \node[draw, dashed, fill=white, text width=2.5cm, rounded corners] (lc2) at ($(bt1) +(\shiftinside)$) {\phantom{Live Copies}};
+      \pic at (0,0){bpcycle={Live Copies}};
+      
+      \coordinate (cbt3c) at ($(bt1) +(0,4)$);
+      \node[draw, fill=white, rounded corners] (cbt1) at ($(cbt3c) +2*(\shiftinside)$) {\phantom{pContext-Aware B-Threadsp}};
+      \node[draw, fill=white, rounded corners] (cbt2) at ($(cbt3c) +(\shiftinside)$) {\phantom{pContext-Aware B-Threadsp}};
+      \node[draw, fill=white, align=center, rounded corners] (cbt3) at (cbt3c) {\phantom{p}Context-Aware B-Threads\phantom{p}};
+      
+      \pic [local bounding box=db,mygray] at (4.5,1){db};
+      \node[mygray] (context) at (4.5,1.8) {Context};
+      \node[draw, mygray,fill=white, rounded corners,align=center](effect) at ([shift=({4.5,-0.5})]funnel.south) {Effect\\Function};
+      
+      \draw [->, line width=0.7pt, blue!90] ([shift=({0,-0.5})]funnel.south) -- (effect);
+      \draw [->, line width=0.7pt, mygray] (effect) -- (db) node[left,align=center,midway] {update};
+      \draw [->, line width=0.7pt, mygray] ([xshift=-50]context) |- (cbt3)node[below,align=center,midway, shift={(-1.1,-0.5)}](seed) {New Queries\\\phantom{p}Results\phantom{p}};
+      
+      \draw [->, line width=0.7pt, mygray] ([xshift=-50]context) |- (cbt2.east);
+      
+      \draw [->, line width=0.7pt, mygray] ([xshift=50]context) |- (cbt1.east);
+     
+     \path[name path=lc1westeast] (lc1.north west) -- (lc1.north east);
+     \path[name path=lc2westeast] (lc2.north west) -- (lc2.north east);
+     \path[name path=bt3cbt3] (bt1) -- (cbt3c);
+     \path[name intersections={of=lc1westeast and bt3cbt3,by=cbt3lc1}];
+     \path[name intersections={of=lc2westeast and bt3cbt3,by=cbt3lc2}];
+
+      \draw [->, line width=0.7pt, dashed] ([shift={(0,0)}]cbt3.south) -- ([shift={(0,0)}]cbt3lc2);
+      \draw [->, line width=0.7pt, dashed] ([shift={(0.5,0)}]cbt3.south) -- ([shift={(0.5,0)}]cbt3lc1);
+      \node[left,align=center] at (seed-|cbt3) {\phantom{Q}Spawn\phantom{Q}\\Live Copies};
+      
+      \draw [->, line width=0.7pt, mygray] (db) -| ([shift=({0.3,-0.3})]effect.south east)-|([shift=({-0.6,-0.6})]funnel.south) node[below,align=center,midway,xshift=65] {Updated Contextual Data};
+    }  
+  }
+}
