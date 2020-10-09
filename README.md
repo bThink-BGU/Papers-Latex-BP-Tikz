@@ -35,6 +35,7 @@ Load the package with
 ### 3.2 Usage Examples
 ```latex
 \documentclass{standalone}
+\usepackage{tikz}
 \usepackage{pgf-bp}
 
 \begin{document}
