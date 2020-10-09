@@ -1,6 +1,5 @@
 # Papers Tikz package
-[![GitHub license](https://img.shields.io/badge/license-LLPL--1.3c-blue)](https://github.com/bThink-BGU/Papers-Latex-BP-Tikz
-/blob/master/LICENSE)
+[![GitHub license](https://img.shields.io/badge/license-LLPL--1.3c-blue)](https://github.com/bThink-BGU/Papers-Latex-BP-Tikz/blob/master/LICENSE)
 ![GitHub release](https://img.shields.io/github/release/bThink-BGU/Papers-Latex-BP-Listings)
 
 Latex package based on TikZ for adding BPjs shapes to your paper
