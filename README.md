@@ -28,23 +28,34 @@ In [Overleaf](https://www.overleaf.com/) this can be done by:
 ### 3.1. Loading the package
 Load the package with 
 ```latex
-\usepackage{tikz}
 \usepackage{pgf-bp}
 ```
 
 ### 3.2 Usage Examples
+To present the figure of BP's life-cycle, write:
 ```latex
 \documentclass{standalone}
-\usepackage{tikz}
 \usepackage{pgf-bp}
 
 \begin{document}
-  \begin{tikzpicture}
-    \pic {bpcycle};
-  \end{tikzpicture}
-  
-  \begin{tikzpicture}
-    \pic {cobpcycle};
-  \end{tikzpicture}	
+
+\BPLifeCycle
+
 \end{document}
 ```
+
+```\BPLifeCycle``` is a macro for the following code:
+```latex
+\begin{tikzpicture}
+    \pic {bpcycle};
+\end{tikzpicture}
+```
+
+You can scale the picture using 
+```latex
+\scalebox{<scaling factor>}{\BPLifeCycle}
+```
+
+You can also embed the lifecycle inside another tikzpicture, by calling ```\pic {bpcycle};``` directly.
+
+For the COBP lifecycle, simply write ```\COBPLifeCycle```.
