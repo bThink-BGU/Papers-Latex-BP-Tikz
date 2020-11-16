@@ -21,7 +21,7 @@ Add the [pgf-bp.sty](pgf-bp.sty) file to your Latex project.
 In [Overleaf](https://www.overleaf.com/) this can be done by:
 1. Adding a new file to the repository.
 1. Selecting "From External URL".
-1. In the first textbox write https://raw.githubusercontent.com/bThink-BGU/Papers-Latex-BP-Listings/master/pgf-bp.sty
+1. In the first textbox write https://raw.githubusercontent.com/bThink-BGU/Papers-Latex-BP-Tikz/main/pgf-bp.sty
 1. Press "Create".
 
 ## 3. Usage
